@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+    .pointer {
+        cursor: pointer;
+    }
+
+    html,
+    body,
+    #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+    }
+
+    .infoDiv,
+    .mapDiv {
+        float: left;
+    }
+
+
+    .infoDiv {
+        width: 30%;
+        display: inline-block;
+
+    }
+
+    .mapDiv {
+        width: 70% !important;
+    }
+
+</style>
+
+
+<head>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.6/esri/css/main.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://js.arcgis.com/4.6/"></script>
+
+    <script type="text/javascript">
+        $(function() {
+            console.log("init");
+            buttonIint();
+            map();
+            var handle = $("#custom-handle");
+            $("#slider").slider({
+
+                max: 50,
+                min: 0,
+                slide: function(event, ui) {
+
+
+                    console.log(ui.value);
+
+                },
+
+                create: function() {
+                    handle.text($(this).slider("value"));
+                },
+                slide: function(event, ui) {
+                    handle.text(ui.value);
+                }
+
+
+            });
+        }); // 等視窗載入完,才呼叫
+        function map() {
+            require([
+                "esri/Map",
+                "esri/views/MapView",
+                "esri/Graphic",
+                "esri/layers/GraphicsLayer",
+                "esri/geometry/Point",
+                "esri/geometry/geometryEngine",
+                "dojo/domReady!"
+            ], function(Map, MapView, Graphic, GraphicsLayer, Point, geometryEngine) {
+                map = new Map({
+                    basemap: "streets"
+                });
+                view = new MapView({
+                    container: "viewDiv", // Reference to the scene div created in step 5
+                    map: map, // Reference to the map object created before the scene
+                    zoom: 10, // Sets zoom level based on level of detail (LOD)
+                    center: [121.533297, 25.048085] // Sets center point of view using longitude,latitude
+
+                });
+                _Glayer = new GraphicsLayer();
+                map.add(_Glayer);
+                // 問題  _handle = $("#custom-handle").text();
+
+            });
+
+        };
+
+        function buttonIint() {
+            $(function() {
+                console.log("init"); // 等視窗載入完,才呼叫
+
+
+
+                $("#search-button").on("click", function() {
+                    var _address = $("#query-input").val();
+                    if (_address == "") {
+                        //  alert("???");
+                        return;
+                    }
+                    var _url = "https://maps.googleapis.com/maps/api/geocode/json?address=" + _address + "&key=AIzaSyDvFT3eOvji9SXf6ckH0ODYXup6E2pprNw";
+                    //.get 跟 .post 差別
+                    //.get url 直接組合  .gost 資料 另外整理成j-son 
+
+                    // attr 才會抓動態的值
+                    $.get(_url, function(resultVaule) {
+                        console.log(resultVaule.results);
+                        //alert("ddd");
+                        if (resultVaule.results.length == 1) {
+                            var _feathure = resultVaule.results[0];
+                            console.log(_feathure);
+                            var _geometry = _feathure.geometry;
+                            console.log(_geometry.location.lat)
+
+                        } else {
+                            // alert("test");
+                            var _list = $("#resultsList");
+                            var _feature;
+                            var _html = [];
+
+                            for (var i = 0; i < resultVaule.results.length; i++) {
+                                _feature = resultVaule.results[i];
+                                console.log(_feature);
+                                _html.push("<tr>")
+                                _html.push("<td><div data-x='" + _feature.geometry.location.lng + "' data-y='" + _feature.geometry.location.lat + "' class='address pointer'>" + _feature.formatted_address + "</div></td>");
+                                _html.push("</tr>")
+                            };
+                            _list.html("").append(_html.join(""));
+
+                            $(".address").on("click", function() {
+                                var _this = $(this);
+                                console.log(_this.data("x"), _this.data("y"));
+                                locate(_this.data("x"), _this.data("y"));
+                            });
+                        }
+                    })
+                });
+            });
+
+
+
+        };
+        //以下function為定位與顯示位置的工具
+        function locate(x, y) {
+            //以下為ArcGIS地圖部分
+            require([
+                "esri/Graphic",
+                "esri/layers/GraphicsLayer",
+                "esri/geometry/Point",
+                "esri/geometry/geometryEngine",
+                "dojo/domReady!"
+            ], function(Graphic, GraphicsLayer, Point, geometryEngine) {
+                //以下為指定點的XY來源
+                var point = new Point({
+                    type: "point",
+                    latitude: y,
+                    longitude: x,
+                });
+                //以上為指定點的XY來源
+                //以下為指定定位點的圖示			
+                var Pointmarker = {
+                    type: "picture-marker",
+                    url: "http://rawmilk.dk/frontend/images/9aab6af3.eclipse-icon.png",
+                    width: 22,
+                    height: 30
+                };
+                //以上為指定定位點的圖示
+                //以下將點位跟圖示加入到Graphic中，將該Graphic加到地圖，並縮放到該地點
+
+                var pinpoint = new Graphic({
+                    geometry: point, // Add the geometry created in step 4
+                    symbol: Pointmarker, // Add the symbol created in step 5
+                });
+                view.goTo({
+                    target: point,
+                    zoom: 15,
+                }, {
+                    duration: 3000
+                });
+                //以上將點位跟圖示加入到Graphic中，將該Graphic加到地圖，並縮放到該地點
+
+            });
+        };
+
+
+
+        // 畫圓功能
+
+
+        function rebuffer() {
+
+            require([
+                "esri/Graphic",
+                "esri/layers/GraphicsLayer",
+                "esri/geometry/Point",
+                "esri/geometry/geometryEngine",
+                "dojo/domReady!"
+            ], function(Graphic, GraphicsLayer, Point, geometryEngine) {
+
+                //以下為顯示點的buffer範圍
+                _hadle = $("#custom-handle").text();
+                var buffer = geometryEngine.geodesicBuffer(point, _hadle, "kilometers");
+                var bufferfill = {
+                    type: "simple-fill",
+                    outline: {
+                        style: "dot"
+                    }
+                };
+                var bufferArea = new Graphic({
+                    geometry: buffer, // Add the geometry created in step 4
+                    symbol: bufferfill, // Add the symbol created in step 5
+                });
+                console.log(pinpoint);
+                _Glayer.removeAll();
+                _Glayer.addMany([pinpoint, bufferArea]);
+
+                //以上為顯示點的buffer範圍
+
+
+            })
+        };
+
+    </script>
+    <meta charset="UTF-8">
+    <title>Map</title>
+</head>
+
+
+
+<body>
+    <div class="infoDiv">
+        <div id="slider">
+            <div id="custom-handle" class="ui-slider-handle"></div>
+        </div>
+        <div id="search-control-ui">
+            <p>中正路</p>
+            <p>請輸入查詢來執行地理編碼，或點擊地圖來執行反向地理編碼。</p>
+            <input id="query-input" autofocus="">
+            <input id="search-button" type="button" value="地理編碼">
+        </div>
+        <table id="resultsList">
+        </table>
+    </div>
+    <div id="viewDiv" class="mapDiv"></div>
+</body>
+
+</html>
