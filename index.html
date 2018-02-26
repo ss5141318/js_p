@@ -103,7 +103,7 @@
                 $("#search-button").on("click", function() {
                     var _address = $("#query-input").val();
                     if (_address == "") {
-                        //alert("???");
+                        alert("???");
                         return;
                     }
                     var _url = "https://maps.googleapis.com/maps/api/geocode/json?address=" + _address + "&key=AIzaSyDvFT3eOvji9SXf6ckH0ODYXup6E2pprNw";
@@ -121,7 +121,7 @@
                             console.log(_geometry.location.lat)
 
                         } else {
-                            //alert("test");
+//                            alert("test");
                             var _list = $("#resultsList");
                             var _feature;
                             var _html = [];
