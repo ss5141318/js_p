@@ -49,18 +49,14 @@
             $("#slider").slider({
                 min: 1,
                 max: 5,
-                slide: function(event, ui) {
-
-
-                    console.log(ui.value);
-
-                },
 
                 create: function() {
                     handle.text($(this).slider("value"));
                 },
                 slide: function(event, ui) {
+                    console.log(ui.value);
                     handle.text(ui.value);
+
                 }
 
 
@@ -103,7 +99,7 @@
                 $("#search-button").on("click", function() {
                     var _address = $("#query-input").val();
                     if (_address == "") {
-                        alert("???");
+                        // alert("???");
                         return;
                     }
                     var _url = "https://maps.googleapis.com/maps/api/geocode/json?address=" + _address + "&key=AIzaSyDvFT3eOvji9SXf6ckH0ODYXup6E2pprNw";
@@ -121,7 +117,7 @@
                             console.log(_geometry.location.lat)
 
                         } else {
-//                            alert("test");
+                            //                            alert("test");
                             var _list = $("#resultsList");
                             var _feature;
                             var _html = [];
@@ -144,10 +140,8 @@
                     })
                 });
             });
-
-
-
         };
+
         //以下function為定位與顯示位置的工具
         function locate(x, y) {
             //以下為ArcGIS地圖部分
@@ -187,6 +181,7 @@
                 });
                 //以上將點位跟圖示加入到Graphic中，將該Graphic加到地圖，並縮放到該地點
 
+
             });
         };
 
@@ -215,8 +210,8 @@
                     }
                 };
                 var bufferArea = new Graphic({
-                    geometry: buffer, // Add the geometry created in step 4
-                    symbol: bufferfill, // Add the symbol created in step 5
+                    geometry: buffer,
+                    symbol: bufferfill,
                 });
                 console.log(pinpoint);
                 _Glayer.removeAll();
