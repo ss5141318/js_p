@@ -57,7 +57,10 @@
                 slide: function(event, ui) {
                     console.log(ui.value);
                     handle.text(ui.value);
+
                     locate(x, y);
+                    drawbuffer();
+
                 }
 
 
@@ -115,7 +118,10 @@
                             var _feathure = resultVaule.results[0];
                             console.log(_feathure);
                             var _geometry = _feathure.geometry;
-                            console.log(_geometry.location.lat)
+                            x = resultVaule.results[0].geometry.location.lng;
+                            y = resultVaule.results[0].geometry.location.lat;
+                            console.log(_geometry.location.lat);
+                            locate(x, y);
 
                         } else {
                             //                            alert("test");
@@ -137,8 +143,9 @@
                                 console.log(_this.data("x"), _this.data("y"));
                                 x = _this.data("x");
                                 y = _this.data("y");
-
+                                locate(x, y);
                             });
+
                         }
                     })
                 });
@@ -156,7 +163,7 @@
                 "dojo/domReady!"
             ], function(Graphic, GraphicsLayer, Point, geometryEngine) {
                 //以下為指定點的XY來源
-                var point = new Point({
+                point = new Point({
                     type: "point",
                     latitude: y,
                     longitude: x,
@@ -178,30 +185,15 @@
                 });
                 view.goTo({
                     target: point,
+
                     zoom: 15,
                 }, {
                     duration: 3000
                 });
                 //以上將點位跟圖示加入到Graphic中，將該Graphic加到地圖，並縮放到該地點
-
-                //以下為顯示點的buffer範圍
-                _hadle = $("#custom-handle").text();
-                var buffer = geometryEngine.geodesicBuffer(point, _hadle, "kilometers");
-                var bufferfill = {
-                    type: "simple-fill",
-                    outline: {
-                        style: "dot"
-                    }
-                };
-                var bufferArea = new Graphic({
-                    geometry: buffer,
-                    symbol: bufferfill,
-                });
                 console.log(pinpoint);
                 _Glayer.removeAll();
-                _Glayer.addMany([bufferArea, pinpoint]);
-
-
+                _Glayer.add(pinpoint);
             });
         };
 
@@ -210,7 +202,7 @@
         // 畫圓功能
 
 
-        function rebuffer() {
+        function drawbuffer() {
 
             require([
                 "esri/Graphic",
@@ -220,7 +212,27 @@
                 "dojo/domReady!"
             ], function(Graphic, GraphicsLayer, Point, geometryEngine) {
 
+                //以下為顯示點的buffer範圍
+                var _hadle = $("#custom-handle").text();
+                var buffer = geometryEngine.geodesicBuffer(point, _hadle, "kilometers");
+                var bufferfill = {
+                    type: "simple-fill",
+                    outline: {
+                        style: "dot"
+                    }
+                };
+                bufferArea = new Graphic({
+                    geometry: buffer,
+                    symbol: bufferfill,
+                });
+                view.goTo({
+                    target: bufferArea.geometry.extent.expand(1.3),
+                }, {
+                    duration: 1000
+                });
 
+                //                _Glayer.removeAll();
+                _Glayer.add(bufferArea);
 
             })
         };
@@ -240,6 +252,7 @@
         </div>
         <div id="search-control-ui">
             <p>中正路</p>
+            <p>新北市民安路</p>
             <p>請輸入查詢來執行地理編碼，或點擊地圖來執行反向地理編碼。</p>
             <input id="query-input" autofocus="">
             <input id="search-button" type="button" value="地理編碼">
