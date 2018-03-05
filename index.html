@@ -1,4 +1,4 @@
-<!DOCTYPE html>哈哈哈
+<!DOCTYPE html>
 <html lang="en">
 <style>
     .pointer {
@@ -41,6 +41,7 @@
     <script src="https://js.arcgis.com/4.6/"></script>
 
     <script type="text/javascript">
+        var x, y;
         $(function() {
             console.log("init");
             buttonIint();
@@ -56,7 +57,7 @@
                 slide: function(event, ui) {
                     console.log(ui.value);
                     handle.text(ui.value);
-
+                    locate(x, y);
                 }
 
 
@@ -134,7 +135,9 @@
                             $(".address").on("click", function() {
                                 var _this = $(this);
                                 console.log(_this.data("x"), _this.data("y"));
-                                locate(_this.data("x"), _this.data("y"));
+                                x = _this.data("x");
+                                y = _this.data("y");
+
                             });
                         }
                     })
@@ -162,7 +165,7 @@
                 //以下為指定定位點的圖示			
                 var Pointmarker = {
                     type: "picture-marker",
-                    url: "http://rawmilk.dk/frontend/images/9aab6af3.eclipse-icon.png",
+                    url: "https://png.pngtree.com/element_pic/00/16/08/1457af484ccb216.jpg",
                     width: 22,
                     height: 30
                 };
@@ -180,6 +183,23 @@
                     duration: 3000
                 });
                 //以上將點位跟圖示加入到Graphic中，將該Graphic加到地圖，並縮放到該地點
+
+                //以下為顯示點的buffer範圍
+                _hadle = $("#custom-handle").text();
+                var buffer = geometryEngine.geodesicBuffer(point, _hadle, "kilometers");
+                var bufferfill = {
+                    type: "simple-fill",
+                    outline: {
+                        style: "dot"
+                    }
+                };
+                var bufferArea = new Graphic({
+                    geometry: buffer,
+                    symbol: bufferfill,
+                });
+                console.log(pinpoint);
+                _Glayer.removeAll();
+                _Glayer.addMany([bufferArea, pinpoint]);
 
 
             });
@@ -200,24 +220,6 @@
                 "dojo/domReady!"
             ], function(Graphic, GraphicsLayer, Point, geometryEngine) {
 
-                //以下為顯示點的buffer範圍
-                _hadle = $("#custom-handle").text();
-                var buffer = geometryEngine.geodesicBuffer(point, _hadle, "kilometers");
-                var bufferfill = {
-                    type: "simple-fill",
-                    outline: {
-                        style: "dot"
-                    }
-                };
-                var bufferArea = new Graphic({
-                    geometry: buffer,
-                    symbol: bufferfill,
-                });
-                console.log(pinpoint);
-                _Glayer.removeAll();
-                _Glayer.addMany([pinpoint, bufferArea]);
-
-                //以上為顯示點的buffer範圍
 
 
             })
@@ -231,6 +233,7 @@
 
 
 <body>
+    <div class="test"></div>
     <div class="infoDiv">
         <div id="slider">
             <div id="custom-handle" class="ui-slider-handle"></div>
